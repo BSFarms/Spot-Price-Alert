@@ -22,7 +22,7 @@ def get_price_data():
     """
     API Endpoint to fetch AEMO 5-minutely price data and return the list of data in json form
     """
-    url = "https://sa-spot-market-electricity-price-alerter.onrender.com/api/pricedata"
+    url = "https://api.opennem.org.au/stats/price/NEM/SA1"
 
     params = {"forecasts": False}
 
@@ -66,12 +66,12 @@ def send_text():
 def standard_operations():
 
     # Fetch AEMO Data
-    url = "http://127.0.0.1:5000/api/pricedata"
+    url = "https://sa-spot-market-electricity-price-alerter.onrender.com/api/pricedata"
     response = requests.get(url)
     price_series = response.json()
 
     # Instantiate Message Data
-    text_url = "http://localhost:5000/sendtext"
+    text_url = "https://sa-spot-market-electricity-price-alerter.onrender.com/sendtext"
     current_time_str = datetime.now().strftime("%d/%m/%y %I:%M %p")
     sms_data = {
         "To": "+61419833448",
