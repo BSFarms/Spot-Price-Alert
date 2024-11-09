@@ -8,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import time
 from datetime import datetime, timedelta
 import os
+import pytz
 
 # Initialize the Flask app
 app = Flask(__name__)
@@ -72,7 +73,8 @@ def standard_operations():
 
     # Instantiate Message Data
     text_url = "https://sa-spot-market-electricity-price-alerter.onrender.com/sendtext"
-    current_time_str = datetime.now().strftime("%d/%m/%y %I:%M %p")
+    utc_time = datetime.now(pytz.utc)
+    local_time = utc_time.astimezone(pytz.timezone('Australia/Adelaide')).strftime("%d/%m/%y %I:%M %p")
     sms_data = {
         "To": "+61419833448",
         "From": "+61437505940",
@@ -84,11 +86,11 @@ def standard_operations():
 
     # Message Logic
     if (price_series[-1] >= price_limit) and (price_series[-2] < price_limit):
-        sms_data["Body"] = f"SPOT MARKET PRICE ALERT - {current_time_str}\n\nPrice is trading ABOVE the prescribed operating limit of ${price_limit}/MWh, currently trading at: ${price_series[-1]}/MWh. You will be notified once the price returns below the limit."
+        sms_data["Body"] = f"SPOT MARKET PRICE ALERT - {local_time}\n\nPrice is trading ABOVE the prescribed operating limit of ${price_limit}/MWh, currently trading at: ${price_series[-1]}/MWh. You will be notified once the price returns below the limit."
         response = requests.post(text_url, json=sms_data)
 
     if (price_series[-1] < price_limit) and (price_series[-2] >= price_limit):
-        sms_data["Body"] = f"SPOT MARKET PRICE ALERT - {current_time_str}\n\nPrice has returned BELOW the prescribed operating limit of ${price_limit}/MWh, current trading at: ${price_series[-1]}/MWh."
+        sms_data["Body"] = f"SPOT MARKET PRICE ALERT - {local_time}\n\nPrice has returned BELOW the prescribed operating limit of ${price_limit}/MWh, current trading at: ${price_series[-1]}/MWh."
         response = requests.post(text_url, json=sms_data)
 
 scheduler = BackgroundScheduler()
