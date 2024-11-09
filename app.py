@@ -22,7 +22,7 @@ def get_price_data():
     """
     API Endpoint to fetch AEMO 5-minutely price data and return the list of data in json form
     """
-    url = "https://api.opennem.org.au/stats/price/NEM/SA1"
+    url = "https://sa-spot-market-electricity-price-alerter.onrender.com/api/pricedata"
 
     params = {"forecasts": False}
 
