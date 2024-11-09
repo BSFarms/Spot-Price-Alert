@@ -7,6 +7,7 @@ from clicksend_client import SmsMessage
 from apscheduler.schedulers.background import BackgroundScheduler
 import time
 from datetime import datetime, timedelta
+import os
 
 # Initialize the Flask app
 app = Flask(__name__)
@@ -43,7 +44,7 @@ def send_text():
     # Configure HTTP basic authorization: BasicAuth
     configuration = clicksend_client.Configuration()
     configuration.username = 'jBurg0909'
-    configuration.password = '299F68B3-B217-4AD2-8A06-6CC7CDE97DD4'
+    configuration.password = os.environ["API_KEY"]
 
     # create an instance of the API class
     api_instance = clicksend_client.SMSApi(clicksend_client.ApiClient(configuration))
@@ -73,7 +74,7 @@ def standard_operations():
     text_url = "http://localhost:5000/sendtext"
     current_time_str = datetime.now().strftime("%d/%m/%y %I:%M %p")
     sms_data = {
-        "To": "+61437505940",
+        "To": "+61419833448",
         "From": "+61437505940",
         "Body": ""
     }
