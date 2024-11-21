@@ -1,4 +1,3 @@
-from flask import Flask, jsonify, request
 import requests
 import pandas as pd
 import numpy as np
@@ -66,32 +65,38 @@ def send_text():
 
 def standard_operations():
 
-    # Fetch AEMO Data
-    url = "https://sa-spot-market-electricity-price-alerter.onrender.com/api/pricedata"
-    response = requests.get(url)
-    price_series = response.json()
-
-    # Instantiate Message Data
-    text_url = "https://sa-spot-market-electricity-price-alerter.onrender.com/sendtext"
     utc_time = datetime.now(pytz.utc)
-    local_time = utc_time.astimezone(pytz.timezone('Australia/Adelaide')).strftime("%d/%m/%y %I:%M %p")
-    sms_data = {
-        "To": "+61419833448",
-        "From": "+61437505940",
-        "Body": ""
-    }
-
-    # Set Limit
-    price_limit = 100.0
-
-    # Message Logic
-    if (price_series[-1] >= price_limit) and (price_series[-2] < price_limit):
-        sms_data["Body"] = f"SPOT MARKET PRICE ALERT - {local_time}\n\nPrice is trading ABOVE the prescribed operating limit of ${price_limit}/MWh, currently trading at: ${price_series[-1]}/MWh. You will be notified once the price returns below the limit."
-        response = requests.post(text_url, json=sms_data)
-
-    if (price_series[-1] < price_limit) and (price_series[-2] >= price_limit):
-        sms_data["Body"] = f"SPOT MARKET PRICE ALERT - {local_time}\n\nPrice has returned BELOW the prescribed operating limit of ${price_limit}/MWh, current trading at: ${price_series[-1]}/MWh."
-        response = requests.post(text_url, json=sms_data)
+    local_time = utc_time.astimezone(pytz.timezone('Australia/Adelaide'))
+    local_time_formatted = local_time.strftime("%d/%m/%y %I:%M %p")
+    current_hour = local_time.hour
+    
+    # Time-limiting the Operation
+    if 7 <= current_hour <= 19:
+        
+        # Fetch AEMO Data
+        url = "https://sa-spot-market-electricity-price-alerter.onrender.com/api/pricedata"
+        response = requests.get(url)
+        price_series = response.json()
+    
+        # Instantiate Message Data
+        text_url = "https://sa-spot-market-electricity-price-alerter.onrender.com/sendtext"
+        sms_data = {
+            "To": "+61419833448",
+            "From": "+61437505940",
+            "Body": ""
+        }
+    
+        # Set Limit
+        price_limit = 100.0
+    
+        # Message Logic
+        if (price_series[-1] >= price_limit) and (price_series[-2] < price_limit):
+            sms_data["Body"] = f"SPOT MARKET PRICE ALERT - {local_time_formatted}\n\nPrice is trading ABOVE the prescribed operating limit of ${price_limit}/MWh, currently trading at: ${price_series[-1]}/MWh. You will be notified once the price returns below the limit."
+            response = requests.post(text_url, json=sms_data)
+    
+        if (price_series[-1] < price_limit) and (price_series[-2] >= price_limit):
+            sms_data["Body"] = f"SPOT MARKET PRICE ALERT - {local_time_formatted}\n\nPrice has returned BELOW the prescribed operating limit of ${price_limit}/MWh, current trading at: ${price_series[-1]}/MWh."
+            response = requests.post(text_url, json=sms_data)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(standard_operations,"interval",minutes=5)
@@ -103,4 +108,3 @@ if __name__ == '__main__':
         app.run(debug=True,use_reloader=False)
     except (KeyboardInterrupt, SystemExit):
         scheduler.shutdown(wait=False)
-    
