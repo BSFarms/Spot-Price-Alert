@@ -70,14 +70,14 @@ def standard_operations():
     local_time = utc_time.astimezone(pytz.timezone('Australia/Adelaide'))
     local_time_formatted = local_time.strftime("%d/%m/%y %I:%M %p")
     current_hour = local_time.hour
+        
+    # Fetch AEMO Data
+    url = "https://sa-spot-market-electricity-price-alerter.onrender.com/api/pricedata"
+    response = requests.get(url)
+    price_series = response.json()
     
     # Time-limiting the Operation
     if 7 <= current_hour <= 19:
-        
-        # Fetch AEMO Data
-        url = "https://sa-spot-market-electricity-price-alerter.onrender.com/api/pricedata"
-        response = requests.get(url)
-        price_series = response.json()
     
         # Instantiate Message Data
         text_url = "https://sa-spot-market-electricity-price-alerter.onrender.com/sendtext"
