@@ -77,7 +77,7 @@ def standard_operations():
     price_series = response.json()
     
     # Time-limiting the Operation
-    if 7 <= current_hour <= 19:
+    if 7 <= current_hour < 19:
     
         # Instantiate Message Data
         text_url = "https://sa-spot-market-electricity-price-alerter.onrender.com/sendtext"
